@@ -29,7 +29,7 @@ const Form = ({ currentId, setCurrentId }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (currentId === 0) {
+    if (currentId == 0) {
       dispatch(createPost({ ...postData, name: user?.result?.name }, history));
       clear();
     } else {

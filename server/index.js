@@ -1,5 +1,4 @@
 import express from 'express';
-import bodyParser from 'body-parser';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import postRoutes from './routes/posts.js';
@@ -10,8 +9,8 @@ const app = express();
 dotenv.config();
 
 //We are setting the body parser so that they can properly send our request 
-app.use(bodyParser.json({ limit: "30mb", extended: true}));
-app.use(bodyParser.urlencoded({ limit: "30mb", extended: true}));
+app.use(express.json({ limit: "30mb", extended: true}));
+app.use(express.urlencoded({ limit: "30mb", extended: true}));
 
 app.use(cors()); //This makes every post to route to /posts path like localhost/5000/posts
 

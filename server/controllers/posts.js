@@ -1,7 +1,9 @@
-// here we create all the handlers for our routes
+import express from 'express';
 import mongoose from 'mongoose';
 
 import PostMessage from '../models/postMessage.js';
+
+const router = express.Router();
 
 export const getPosts = async (req, res) => {
     const { page } = req.query;
@@ -11,26 +13,24 @@ export const getPosts = async (req, res) => {
         const startIndex = (Number(page) - 1) * LIMIT; // get the starting index of every page
     
         const total = await PostMessage.countDocuments({});
-        const posts = await PostMessage.find().sort({ _id: -1 }).limit(LIMIT).skip(startIndex);  // sort is used to get new posts first
+        const posts = await PostMessage.find().sort({ _id: -1 }).limit(LIMIT).skip(startIndex);
 
         res.json({ data: posts, currentPage: Number(page), numberOfPages: Math.ceil(total / LIMIT)});
     } catch (error) {    
         res.status(404).json({ message: error.message });
     }
 }
-// we use req.query when the url is like /posts?page=1 -> page = 1
-// we use req.params when the url is like /posts/:id -> id = 123
 
-export const getPostsBySearch = async ( req, res) => {
+export const getPostsBySearch = async (req, res) => {
     const { searchQuery, tags } = req.query;
 
     try {
-        const title = new RegExp( searchQuery, 'i');  // here i stands for ignore case
-    
+        const title = new RegExp(searchQuery, "i");
+
         const posts = await PostMessage.find({ $or: [ { title }, { tags: { $in: tags.split(',') } } ]});
-    
+
         res.json({ data: posts });
-    } catch (error) {
+    } catch (error) {    
         res.status(404).json({ message: error.message });
     }
 }
@@ -41,7 +41,6 @@ export const getPost = async (req, res) => {
     try {
         const post = await PostMessage.findById(id);
         
-        // 201 and 409 are htmlstatuscodes for success and failure conditions
         res.status(200).json(post);
     } catch (error) {
         res.status(404).json({ message: error.message });
@@ -56,7 +55,7 @@ export const createPost = async (req, res) => {
     try {
         await newPostMessage.save();
 
-        res.status(201).json(newPostMessage );
+        res.status(201).json(newPostMessage);
     } catch (error) {
         res.status(409).json({ message: error.message });
     }
@@ -103,8 +102,23 @@ export const likePost = async (req, res) => {
     } else {
       post.likes = post.likes.filter((id) => id !== String(req.userId));
     }
+
     const updatedPost = await PostMessage.findByIdAndUpdate(id, post, { new: true });
+
     res.status(200).json(updatedPost);
 }
 
+export const commentPost = async (req, res) => {
+    const { id } = req.params;
+    const { value } = req.body;
 
+    const post = await PostMessage.findById(id);
+
+    post.comments.push(value);
+
+    const updatedPost = await PostMessage.findByIdAndUpdate(id, post, { new: true });
+
+    res.json(updatedPost);
+};
+
+export default router;
